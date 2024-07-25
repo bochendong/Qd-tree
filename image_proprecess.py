@@ -13,11 +13,14 @@ root_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
 out_dir = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preorocess_data/{fixed_length}_{to_size}/train/"
 
 if not os.path.exists(out_dir):
+    print(f"Out dir created at {out_dir}.")
     os.makedirs(out_dir)
 
 for class_id, class_name in enumerate(os.listdir(root_dir)):
     class_dir = os.path.join(root_dir, class_name)
     out_class_dir = os.path.join(out_dir, class_name)
+
+    print(f"Propress image for {class_name}.")
     
     if not os.path.exists(out_class_dir):
         os.makedirs(out_class_dir)
