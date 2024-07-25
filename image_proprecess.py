@@ -3,14 +3,12 @@ import cv2 as cv
 import numpy as np
 from quadtree import FixedQuadTree
 
-root_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
-out_dir = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preorocess_data/train/"
 
 to_size = (8, 8, 3)
 fixed_length = 1024
 
 root_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
-out_dir = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preorocess_data/{fixed_length}_{to_size}/train/"
+out_dir = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preprocess_data/{fixed_length}_{to_size}/train/"
 
 if not os.path.exists(out_dir):
     print(f"Out dir created at {out_dir}.")
@@ -45,10 +43,6 @@ for class_id, class_name in enumerate(os.listdir(root_dir)):
 
             out_img_path = os.path.join(out_class_dir, img_name)
             cv.imwrite(out_img_path, seq_img)
-
-            break
-    break
-
 
 
 
