@@ -30,15 +30,16 @@ for class_id, class_name in enumerate(os.listdir(root_dir)):
             img_path = os.path.join(class_dir, img_name)
 
             img = cv.imread(img_path)
+            img = cv.resize(img, (512, 512))
 
             grey_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
             gray_img = cv.GaussianBlur(img, (3, 3), 0)
 
             edges = cv.Canny(gray_img, 80, 100)
-            resized_image = cv.resize(img, (512,512))
+
             qdt = FixedQuadTree(domain = edges, fixed_length = fixed_length)
 
-            seq_img = qdt.serialize(resized_image, size = to_size)
+            seq_img = qdt.serialize(img, size = to_size)
             seq_img = np.asarray(seq_img)
             seq_img = np.reshape(seq_img, [to_size[0], -1, to_size[2]])
 
