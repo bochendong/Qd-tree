@@ -32,13 +32,14 @@ def preprocess_image(root_dir, out_dir, to_size, fixed_length):
         print(f"Preprocess image for {class_name}. [{class_id}/{len(os.listdir(root_dir))}]")
         if not os.path.exists(out_class_dir):
             os.makedirs(out_class_dir)
-            if os.path.isdir(class_dir):
-                for img_name in os.listdir(class_dir):
-                    img_path = os.path.join(class_dir, img_name)
 
-                    seq_img, _ = seqence_image(img_path, to_size, fixed_length)
-                    out_img_path = os.path.join(out_class_dir, img_name)
-                    cv.imwrite(out_img_path, seq_img)
+        if os.path.isdir(class_dir):
+            for img_name in os.listdir(class_dir):
+                img_path = os.path.join(class_dir, img_name)
+
+                seq_img, _ = seqence_image(img_path, to_size, fixed_length)
+                out_img_path = os.path.join(out_class_dir, img_name)
+                cv.imwrite(out_img_path, seq_img)
         
 
 

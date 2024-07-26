@@ -27,8 +27,8 @@ dataset = ImageNetDataset(root_dir=preporcess_dir, transform=transform)
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
 
 for i, data in enumerate(dataloader):
-    print(data[0].size())
-    print(data[1].size())
+    print(data[0].size()) #torch.Size([32, 3, 8, 8192])
+    print(data[1].size()) # torch.Size([32])
 '''
 model = get_vit_model('vit_base_patch16_224', len(dataset.classes))    
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
