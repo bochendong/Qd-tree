@@ -29,14 +29,14 @@ dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
 for i, data in enumerate(dataloader):
     print(data[0].size())
     print(data[1].size())
-
+'''
 model = get_vit_model('vit_base_patch16_224', len(dataset.classes))    
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 model = train(model = model, dataloader = dataloader, 
-              num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)
+              num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)'''
 
 
 
