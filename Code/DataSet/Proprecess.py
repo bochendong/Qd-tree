@@ -29,7 +29,7 @@ def preprocess_image(root_dir, out_dir, to_size, fixed_length):
         class_dir = os.path.join(root_dir, class_name)
         out_class_dir = os.path.join(out_dir, class_name)
 
-        print(f"Preprocess image for {class_name}.")
+        print(f"Preprocess image for {class_name}. [{class_id}/{len(os.listdir(root_dir))}]")
         
         if not os.path.exists(out_class_dir):
             os.makedirs(out_class_dir)
