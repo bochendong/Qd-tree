@@ -5,9 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 from ..QdTree.quadtree import FixedQuadTree
 
-def seqence_image(image_path, to_size=(8, 8, 3), fixed_length=1024):
+def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=196):
     img = cv.imread(image_path)
-    img = cv.resize(img, (512, 512))
+    img = cv.resize(img, (img_size, img_size))
 
     grey_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     gray_img = cv.GaussianBlur(grey_img, (3, 3), 0)
@@ -23,11 +23,11 @@ def seqence_image(image_path, to_size=(8, 8, 3), fixed_length=1024):
     return seq_img, qdt
 
 def process_single_image(args):
-    img_path, out_img_path, to_size, fixed_length = args
-    seq_img, _ = seqence_image(img_path, to_size, fixed_length)
+    img_path, out_img_path, to_size, fixed_length, img_size = args
+    seq_img, _ = seqence_image(img_path, img_size, to_size, fixed_length)
     cv.imwrite(out_img_path, seq_img)
 
-def preprocess_image(root_dir, out_dir, to_size, fixed_length, num_threads=4):
+def preprocess_image(root_dir, out_dir, to_size, fixed_length, img_size, num_threads=4):
     if not os.path.exists(out_dir):
         print(f"Out dir created at {out_dir}.")
         os.makedirs(out_dir)
@@ -46,7 +46,7 @@ def preprocess_image(root_dir, out_dir, to_size, fixed_length, num_threads=4):
             for img_name in os.listdir(class_dir):
                 img_path = os.path.join(class_dir, img_name)
                 out_img_path = os.path.join(out_class_dir, img_name)
-                tasks.append((img_path, out_img_path, to_size, fixed_length))
+                tasks.append((img_path, out_img_path, to_size, fixed_length, img_size))
 
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
         list(tqdm(executor.map(process_single_image, tasks), total=len(tasks)))
