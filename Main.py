@@ -52,10 +52,11 @@ def main(root_dir, preporcess_dir,
 
     # Processed Image Shape Test 
     for i, data in enumerate(dataloader):
+
         print("Processed Image Size:", data[0].size())
         print("Processed Label Size:", data[1].size())
 
-        out = model(data[0])
+        out = model(data[0].to(device))
         print("Model Output Test:", out.size())
         break
 
