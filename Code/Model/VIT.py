@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 os.environ['HF_HOME'] = '/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree'
+os.environ['TORCH_HOME'] = '/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree'
 
 class PatchEmbedding(nn.Module):
     def __init__(self, patch_size = 8, in_chans = 3, embed_dim = 768, num_patches = 196, bias = True):
