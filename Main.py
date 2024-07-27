@@ -1,5 +1,6 @@
 import os
 import torch
+import argparse
 import torch.nn as nn
 import torch.multiprocessing as mp
 
@@ -94,6 +95,10 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Patchify dataset.')
+    parser.add_argument('--batch_size', type=int,  default=128, help='Batch Size.')
+    args = parser.parse_args()
+
     num_gpus = check_available_gpus()
     mp.set_start_method('spawn')
     root_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
@@ -101,7 +106,7 @@ if __name__ == "__main__":
     weight_path = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Weight/"
 
     preprocess_local = False
-    batch_size = 512
+    batch_size = args.batch_size
 
     processes = []
     for rank in range(num_gpus):
