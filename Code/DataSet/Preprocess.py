@@ -24,8 +24,6 @@ def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=19
     seq_img = np.asarray(seq_img)
     seq_img = np.reshape(seq_img, [to_size[0], -1, to_size[2]])
 
-    print("Finished")
-
     return seq_img, qdt
 
 def process_single_image(args):
