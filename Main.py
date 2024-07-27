@@ -4,7 +4,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 
 
-from Code.DataSet.Proprecess import preprocess_image
+from Code.DataSet.Preprocess import preprocess_image
 from Code.DataSet.ImageNetDataSet import ImageNetDataset
 from Code.Model.VIT import get_model
 from Code.Train.Train import train

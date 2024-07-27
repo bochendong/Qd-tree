@@ -1,6 +1,6 @@
 import os
 import cv2 as cv
-from Proprecess import seqence_image
+from Code.DataSet.Preprocess import seqence_image
 from torch.utils.data import Dataset
 
 class ImageNetDataset(Dataset):
