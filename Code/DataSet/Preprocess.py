@@ -7,7 +7,7 @@ from ..QdTree.quadtree import FixedQuadTree
 
 def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=196):
 
-    # print(f"img_size: {img_size}, to_size: {to_size}, fixed_length: {fixed_length}" )
+    print(f"img_size: {img_size}, to_size: {to_size}, fixed_length: {fixed_length}" )
     img = cv.imread(image_path)
     img = cv.resize(img, (img_size, img_size))
 
