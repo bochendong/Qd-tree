@@ -1,4 +1,6 @@
-def train(model, dataloader, num_epochs, optimizer, criterion, device):
+import torch
+
+def train(model, dataloader, weight_path, num_epochs, optimizer, criterion, device):
     for epoch in range(num_epochs):
         running_loss = 0.0
         for i, data in enumerate(dataloader):
@@ -16,5 +18,6 @@ def train(model, dataloader, num_epochs, optimizer, criterion, device):
             if i % 100 == 99:
                 print(f"[{epoch + 1}, {i + 1}] loss: {running_loss / 100:.3f}")
                 running_loss = 0.0
+        torch.save(model.state_dict(), weight_path)
 
     return model

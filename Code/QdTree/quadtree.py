@@ -135,7 +135,7 @@ class FixedQuadTree:
         seq = seq.astype(int)
         mask = np.zeros(shape=self.domain.shape)
         # mask = np.expand_dims(mask, axis=-1)
-        for idx,(bbox,value) in enumerate(self.nodes):
+        for idx,(bbox, value) in enumerate(self.nodes):
             pred_mask = seq[idx, ...]
             mask = bbox.set_area(mask, pred_mask)
         return mask
