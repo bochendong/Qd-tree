@@ -5,14 +5,14 @@ from torch.utils.data import Dataset
 
 class ImageNetDataset(Dataset):
     def __init__(self, root_dir, preprocess_local = False,
-                 image_size = 224, to_size=(8, 8, 3), num_patches=196,
+                 img_size = 224, to_size=(8, 8, 3), num_patches=196,
                  transform=None):
         
         self.root_dir = root_dir
         self.transform = transform
         self.classes = os.listdir(root_dir)
         self.preprocess_local = preprocess_local
-        self.image_size = image_size
+        self.image_size = img_size
         self.to_size = to_size
         self.num_patches = num_patches
         self.img_paths = []
