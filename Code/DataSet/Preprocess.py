@@ -17,6 +17,7 @@ def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=19
     gray_img = cv.GaussianBlur(grey_img, (3, 3), 0)
 
     edges = cv.Canny(gray_img, 80, 100)
+    print("Edges size:", edges.shape)
 
     qdt = FixedQuadTree(domain=edges, fixed_length=fixed_length)
 
