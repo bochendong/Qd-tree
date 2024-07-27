@@ -36,7 +36,10 @@ class ImageNetDataset(Dataset):
             img = cv.imread(img_path)
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         else:
-            img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
+            try:
+                img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
+            except AssertionError:
+                return self.__getitem__((idx + 1) % len(self))
         
         if self.transform:
             img = self.transform(img)
