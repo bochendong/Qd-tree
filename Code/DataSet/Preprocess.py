@@ -6,10 +6,10 @@ from tqdm import tqdm
 from ..QdTree.quadtree import FixedQuadTree
 
 def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=196):
-
     print(f"img_size: {img_size}, to_size: {to_size}, fixed_length: {fixed_length}" )
     img = cv.imread(image_path)
     img = cv.resize(img, (img_size, img_size))
+    print("Resized image size:", img.shape)
 
     grey_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     gray_img = cv.GaussianBlur(grey_img, (3, 3), 0)
