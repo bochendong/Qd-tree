@@ -23,7 +23,7 @@ class PatchEmbedding(nn.Module):
     
 def get_model(model_type, num_classes, num_patches = 196, embed_dim = 768, to_size = (8, 8, 3)):
     if (model_type == 'vit_base_patch16_224'):
-        model = timm.create_model('vit_base_patch16_224', pretrained=True, num_classes=num_classes)
+        model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=num_classes)
         model.patch_embed = PatchEmbedding(patch_size = to_size[0], num_patches = num_patches, embed_dim = embed_dim)
         model.pos_embed = nn.Parameter(torch.randn(1, num_patches + model.num_prefix_tokens, embed_dim) * .02)
 
