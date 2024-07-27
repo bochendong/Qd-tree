@@ -10,7 +10,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from Code.DataSet.Preprocess import preprocess_image
 from Code.DataSet.ImageNetDataSet import ImageNetDataset
 from Code.Model.VIT import get_model
-from Code.Train.Train import train
+from Code.Train.Train import learn
 
 def check_available_gpus():
     try:
@@ -89,7 +89,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
 
     
     # Vit Model Test
-    model = train(model = ddp_model, dataloader = dataloader, weight_path = weight_path,
+    model = learn(model = ddp_model, dataloader = dataloader, weight_path = weight_path,
                 num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)
 
 
