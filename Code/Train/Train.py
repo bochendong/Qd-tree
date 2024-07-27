@@ -1,7 +1,7 @@
 def train(model, dataloader, num_epochs, optimizer, criterion, device):
     for epoch in range(num_epochs):
         running_loss = 0.0
-        for i, data in enumerate(dataloader, 0):
+        for i, data in enumerate(dataloader):
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
 

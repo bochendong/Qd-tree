@@ -3,7 +3,6 @@ import torch.nn as nn
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
-
 from Code.DataSet.Preprocess import preprocess_image
 from Code.DataSet.ImageNetDataSet import ImageNetDataset
 from Code.Model.VIT import get_model
@@ -49,27 +48,13 @@ def main(root_dir, preporcess_dir,
     else:
         print("Invalid model Type")
         return 
-
-    # Processed Image Shape Test 
-    for i, data in enumerate(dataloader):
-
-        print("Processed Image Size:", data[0].size())
-        print("Processed Label Size:", data[1].size())
-
-        out = model(data[0].to(device))
-        print("Model Output Test:", out.size())
-        break
-
-    # Vit Model Test
-
-    '''
-    model = get_vit_model('vit_base_patch16_224', len(dataset.classes))    
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+    # Vit Model Test
     model = train(model = model, dataloader = dataloader, 
-                num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)'''
+                num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)
 
 
 root_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
