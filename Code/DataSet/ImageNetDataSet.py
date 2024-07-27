@@ -12,7 +12,7 @@ class ImageNetDataset(Dataset):
         self.transform = transform
         self.classes = os.listdir(root_dir)
         self.preprocess_local = preprocess_local
-        self.image_size = img_size
+        self.img_size = img_size
         self.to_size = to_size
         self.num_patches = num_patches
         self.img_paths = []
