@@ -73,7 +73,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
                                   to_size = to_size, num_patches = num_patches)
 
     sampler = DistributedSampler(dataset, num_replicas=num_gpus, rank=rank)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4, sampler=sampler)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1, sampler=sampler)
 
     if (model_type == 'vit_base_patch16_224'):
         model = get_model(model_type, num_classes, num_patches, embed_dim, to_size)
