@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A bif146
 #SBATCH -o qdt_vit_196_256.o%j
-#SBATCH -t 00:05:00
+#SBATCH -t 00:15:00
 #SBATCH -N 1
 #SBATCH -p batch
 

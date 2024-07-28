@@ -12,6 +12,7 @@ from Code.DataSet.Preprocess import preprocess_image
 from Code.DataSet.ImageNetDataSet import ImageNetDataset
 from Code.Model.VIT import get_model
 from Code.Train.Train import learn
+from Code.Utils.Logging import setup_logging
 
 def check_available_gpus():
     try:
@@ -97,16 +98,25 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Patchify dataset.')
     parser.add_argument('--batch_size', type=int,  default=128, help='Batch Size.')
+    parser.add_argument('--img_size', type=int,  default=224, help='Image Size.')
+    parser.add_argument('--num_patches', type=int,  default=196, help='Number of Patches.')
     args = parser.parse_args()
+
+    batch_size = args.batch_size
+    img_size =  args.img_size
+    num_patches = args.num_patches
 
     num_gpus = check_available_gpus()
     mp.set_start_method('spawn')
+
     root_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
     preporcess_dir = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preprocess_data/"
     weight_path = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Weight/"
+    log_path = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Log/img_size_{img_size}_num_patches_{num_patches}.log"
+
+    setup_logging(log_path)
 
     preprocess_local = False
-    batch_size = args.batch_size
 
     processes = []
     for rank in range(num_gpus):
