@@ -3,7 +3,7 @@ import torch
 import argparse
 import torch.nn as nn
 import torch.multiprocessing as mp
-
+import logging
 from torchvision import transforms
 from torch.utils.data import DataLoader, DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -47,6 +47,8 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
          num_classes = 1000):
     
     torch.manual_seed(0)
+    logging.info('-' * 8 + "Training Start" + '-' * 8)
+
     device = torch.device(f'cuda:{rank}')
 
     transform = transforms.Compose([
@@ -88,7 +90,6 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
     
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(ddp_model.parameters(), lr=0.001)
-
     
     # Vit Model Test
     model = learn(model = ddp_model, dataloader = dataloader, weight_path = weight_path,
