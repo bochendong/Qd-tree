@@ -33,6 +33,8 @@ def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local,
                  batch_size, weight_path,
                  train_fn, backend='nccl'):
     
+    logging.info('-' * 8 + f"Init Process at Rank {rank}" + '-' * 8)
+    
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12355'
     torch.distributed.init_process_group(backend, rank=rank, world_size=num_gpus)
@@ -60,13 +62,10 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
     preporcess_dir = preporcess_dir + f"{num_patches}_{to_size}/train/"
     weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}.pth'
 
-    # Preprocess the image while load the data
     if (preprocess_local == False): 
         dataset = ImageNetDataset(root_dir=root_dir, transform=transform, 
                                   img_size = img_size, to_size = to_size, 
                                   num_patches = num_patches)
-        
-    # Preprocess the image and save to local
     else:
         preprocess_image(root_dir, preporcess_dir, img_size = img_size, 
                          to_size = to_size, fixed_length = num_patches)
@@ -75,24 +74,23 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
                                   preprocess_local = True, img_size = img_size, 
                                   to_size = to_size, num_patches = num_patches)
 
-    sampler = DistributedSampler(dataset, num_replicas=num_gpus, rank=rank)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1, sampler=sampler)
-
-    if (model_type == 'vit_base_patch16_224'):
-        model = get_model(model_type, num_classes, num_patches, embed_dim, to_size)
-        model = model.to(device)
-        if os.path.exists(weight_path):
-            model.load_state_dict(torch.load(weight_path, map_location=device))
-        ddp_model = DDP(model, device_ids=[rank])
+    model = get_model(model_type, num_classes, num_patches, embed_dim, to_size)
+    model = model.to(device)
+    if os.path.exists(weight_path):
+        model.load_state_dict(torch.load(weight_path, map_location=device))
+    
+    if (num_gpus > 1):
+        sampler = DistributedSampler(dataset, num_replicas=num_gpus, rank=rank)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1, sampler=sampler)
+        model = DDP(model, device_ids=[rank])
     else:
-        print("Invalid model Type")
-        return 
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=1)
+
     
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(ddp_model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     
-    # Vit Model Test
-    model = learn(model = ddp_model, dataloader = dataloader, weight_path = weight_path,
+    model = learn(model = model, dataloader = dataloader, weight_path = weight_path,
                 num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)
 
 
@@ -118,20 +116,30 @@ if __name__ == "__main__":
     num_gpus = check_available_gpus()
     mp.set_start_method('spawn')
 
+    logging.info('-' * 8 + "Set Start Method Spawn" + '-' * 8)
+
     preprocess_local = False
 
-    processes = []
-    for rank in range(num_gpus):
-        p = torch.multiprocessing.Process(target=init_process, 
-                                          args=(rank, num_gpus, 
-                                                root_dir, preporcess_dir, preprocess_local,
-                                                batch_size, weight_path,
-                                                train))
-        p.start()
-        processes.append(p)
+    if (num_gpus > 1):
+        processes = []
+        for rank in range(num_gpus):
+            p = torch.multiprocessing.Process(target=init_process, 
+                                            args=(rank, num_gpus, 
+                                                    root_dir, preporcess_dir, preprocess_local,
+                                                    batch_size, weight_path,
+                                                    train))
+            p.start()
+            processes.append(p)
 
-    for p in processes:
-        p.join()
+        for p in processes:
+            p.join()
+    else:
+        train(0, num_gpus, root_dir, preporcess_dir, weight_path,
+         model_type = 'vit_base_patch16_224',
+         preprocess_local = True, 
+         batch_size = 32, img_size = 224, num_patches = 196, embed_dim = 768, 
+         to_size = (8, 8, 3),
+         num_classes = 1000)
 
 
 
