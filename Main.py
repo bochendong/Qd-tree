@@ -31,7 +31,7 @@ def check_available_gpus():
 
 def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local, 
                  batch_size, weight_path,
-                 train_fn, backend='nccl'):
+                 train_fn, log_path, backend='nccl'):
 
     setup_logging(log_path)
     
@@ -45,7 +45,7 @@ def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local,
 
 def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
          model_type = 'vit_base_patch16_224',
-         preprocess_local = True, 
+         preprocess_local = False, 
          batch_size = 32, img_size = 224, num_patches = 196, embed_dim = 768, 
          to_size = (8, 8, 3),
          num_classes = 1000):
@@ -69,6 +69,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
                                   img_size = img_size, to_size = to_size, 
                                   num_patches = num_patches)
     else:
+        logging.info('-' * 8 + "Preprocess images to local" + '-' * 8)
         preprocess_image(root_dir, preporcess_dir, img_size = img_size, 
                          to_size = to_size, fixed_length = num_patches)
         
@@ -126,10 +127,10 @@ if __name__ == "__main__":
         processes = []
         for rank in range(num_gpus):
             p = torch.multiprocessing.Process(target=init_process, 
-                                            args=(rank, num_gpus, 
+                                              args=(rank, num_gpus, 
                                                     root_dir, preporcess_dir, preprocess_local,
                                                     batch_size, weight_path,
-                                                    train))
+                                                    train, log_path))
             p.start()
             processes.append(p)
 
