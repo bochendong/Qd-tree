@@ -32,6 +32,8 @@ def check_available_gpus():
 def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local, 
                  batch_size, weight_path,
                  train_fn, backend='nccl'):
+
+    setup_logging(log_path)
     
     logging.info('-' * 8 + f"Init Process at Rank {rank}" + '-' * 8)
     
