@@ -37,8 +37,8 @@ def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local,
     
     logging.info('-' * 8 + f"Init Process at Rank {rank}" + '-' * 8)
     
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12355'
+    os.environ['MASTER ADDR'] = str(os.environ['HOSTNAME'])
+    os.environ['MASTER_PORT'] = '29500'
     torch.distributed.init_process_group(backend, rank=rank, world_size=num_gpus)
     train_fn(rank, num_gpus, root_dir, preporcess_dir, 
              preprocess_local = preprocess_local, batch_size = batch_size, weight_path = weight_path)
