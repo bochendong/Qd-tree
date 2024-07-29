@@ -5,8 +5,8 @@
 #SBATCH -N 1
 #SBATCH -p batch
 
-export MIOPEN_DISABLE_CACHE=1
-export MIOPEN_CUSTOM_CACHE_DIR=$(pwd)
+export MIOPEN_DISABLE_CACHE=1 
+export MIOPEN_CUSTOM_CACHE_DIR='pwd' 
 export HOME="/tmp/srun"
 
 module load PrgEnv-cray/8.3.3
