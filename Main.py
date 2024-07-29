@@ -107,17 +107,16 @@ if __name__ == "__main__":
     img_size =  args.img_size
     num_patches = args.num_patches
 
-    num_gpus = check_available_gpus()
-    mp.set_start_method('spawn')
-
     root_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
     preporcess_dir = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preprocess_data/"
     weight_path = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Weight/"
     log_path = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Log/img_size_{img_size}_num_patches_{num_patches}.log"
 
     setup_logging(log_path)
-
     logging.info('-' * 8 + "Logging File Created" + '-' * 8)
+
+    num_gpus = check_available_gpus()
+    mp.set_start_method('spawn')
 
     preprocess_local = False
 
