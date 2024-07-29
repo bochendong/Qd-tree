@@ -89,7 +89,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
     
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    
+
     model = learn(model = model, dataloader = dataloader, weight_path = weight_path,
                 num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     else:
         train(0, num_gpus, root_dir, preporcess_dir, weight_path,
          model_type = 'vit_base_patch16_224',
-         preprocess_local = True, 
+         preprocess_local = False, 
          batch_size = 32, img_size = 224, num_patches = 196, embed_dim = 768, 
          to_size = (8, 8, 3),
          num_classes = 1000)
