@@ -117,6 +117,8 @@ if __name__ == "__main__":
 
     setup_logging(log_path)
 
+    logging.info('-' * 8 + "Logging File Created" + '-' * 8)
+
     preprocess_local = False
 
     processes = []
