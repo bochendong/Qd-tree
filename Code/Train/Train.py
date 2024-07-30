@@ -29,7 +29,7 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
                 running_loss = 0.0
 
         accuracy = 100 * correct / total
-        logging.info(f"[Epoch {epoch + 1}] Accuracy: {accuracy:.2f}%")
+        logging.info(f"[Epoch {epoch + 1}] Acc: {accuracy:.2f}%")
 
         scheduler.step()
 
