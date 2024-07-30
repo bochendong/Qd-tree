@@ -46,7 +46,7 @@ def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local,
 def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
          model_type = 'vit_base_patch16_224',
          preprocess_local = False, 
-         batch_size = 32, img_size = 224, num_patches = 196, embed_dim = 768, 
+         batch_size = 128, img_size = 224, num_patches = 196, embed_dim = 768, 
          to_size = (8, 8, 3),
          num_classes = 1000):
     
