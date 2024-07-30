@@ -1,47 +1,35 @@
 import os
 import torch
+import logging
 import argparse
 import torch.nn as nn
 import torch.multiprocessing as mp
-import logging
 from torchvision import transforms
+from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader, DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+from Code.Train.Train import learn
+from Code.Model.VIT import get_model
+from Code.Utils.Logging import setup_logging
+from Code.Utils.GpuCheck import check_available_gpus
 from Code.DataSet.Preprocess import preprocess_image
 from Code.DataSet.ImageNetDataSet import ImageNetDataset
-from Code.Model.VIT import get_model
-from Code.Train.Train import learn
-from Code.Utils.Logging import setup_logging
 
-def check_available_gpus():
-    try:
-        num_gpus = torch.cuda.device_count()
-        if num_gpus == 0:
-            print("No GPUs available.")
-        else:
-            print(f"Number of available GPUs: {num_gpus}")
-            for i in range(num_gpus):
-                print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
-
-        return num_gpus
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        print("Make sure PyTorch is installed with ROCm support.")
 
 def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local, 
                  batch_size, weight_path,
                  train_fn, log_path, backend='nccl'):
 
     setup_logging(log_path)
-    
     logging.info('-' * 8 + f"Init Process at Rank {rank}" + '-' * 8)
     
     os.environ['MASTER_ADDR'] = str(os.environ['HOSTNAME'])
     os.environ['MASTER_PORT'] = '29500'
     torch.distributed.init_process_group(backend, rank=rank, world_size=num_gpus)
     train_fn(rank, num_gpus, root_dir, preporcess_dir, 
-             preprocess_local = preprocess_local, batch_size = batch_size, weight_path = weight_path)
+             preprocess_local = preprocess_local, 
+             batch_size = batch_size, weight_path = weight_path)
 
 def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
          model_type = 'vit_base_patch16_224',
@@ -51,8 +39,6 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
          num_classes = 1000):
     
     torch.manual_seed(0)
-    logging.info('-' * 8 + "Training Start" + '-' * 8)
-
     device = torch.device(f'cuda:{rank}')
 
     transform = transforms.Compose([
@@ -92,9 +78,12 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
     
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
 
     model = learn(model = model, dataloader = dataloader, weight_path = weight_path,
-                num_epochs = 10, optimizer = optimizer, criterion = criterion, device = device)
+                num_epochs = 200, optimizer = optimizer, 
+                criterion = criterion, scheduler = scheduler,
+                rank = rank, device = device)
 
 
 if __name__ == "__main__":
@@ -114,12 +103,9 @@ if __name__ == "__main__":
     log_path = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Log/img_size_{img_size}_num_patches_{num_patches}.log"
 
     setup_logging(log_path)
-    logging.info('-' * 8 + "Logging File Created" + '-' * 8)
 
     num_gpus = check_available_gpus()
     mp.set_start_method('spawn')
-
-    logging.info('-' * 8 + "Set Start Method Spawn" + '-' * 8)
 
     preprocess_local = False
 
