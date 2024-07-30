@@ -4,9 +4,7 @@ import logging
 def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, device):
     for epoch in range(num_epochs):
         running_loss = 0.0
-        logging.info(f"Epoch: {epoch + 1}")
         for i, data in enumerate(dataloader):
-            logging.info(f"Epoch: {epoch + 1}, step: {i + 1}")
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
 
