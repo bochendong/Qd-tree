@@ -3,7 +3,7 @@ import torch
 import logging
 import argparse
 import torch.nn as nn
-import torch.multiprocessing as mp
+import torch.distributed as dist
 from torchvision import transforms
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader, DistributedSampler
@@ -16,19 +16,6 @@ from Code.Utils.GpuCheck import check_available_gpus
 from Code.DataSet.Preprocess import preprocess_image
 from Code.DataSet.ImageNetDataSet import ImageNetDataset
 
-
-def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local, 
-                 batch_size, weight_path,
-                 train_fn, log_path, backend='nccl'):
-
-    setup_logging(log_path)
-    
-    os.environ['MASTER_ADDR'] = str(os.environ['HOSTNAME'])
-    os.environ['MASTER_PORT'] = '29500'
-    torch.distributed.init_process_group(backend, rank=rank, world_size=num_gpus)
-    train_fn(rank, num_gpus, root_dir, preporcess_dir, 
-             preprocess_local = preprocess_local, 
-             batch_size = batch_size, weight_path = weight_path)
 
 def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
          model_type = 'vit_base_patch16_224',
@@ -53,7 +40,6 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
         dataset = ImageNetDataset(root_dir=root_dir, transform=transform, 
                                   img_size = img_size, to_size = to_size, 
                                   num_patches = num_patches)
-
     else:
         logging.info('-' * 8 + f"Device {rank}, Preprocess images to local" + '-' * 8)
         preprocess_image(root_dir, preporcess_dir, img_size = img_size, 
@@ -93,6 +79,7 @@ if __name__ == "__main__":
     parser.add_argument('--img_size', type=int,  default=224, help='Image Size.')
     parser.add_argument('--num_patches', type=int,  default=196, help='Number of Patches.')
     args = parser.parse_args()
+    args.world_size = int(os.environ['SLURM_NTASKS'])
 
     batch_size = args.batch_size
     img_size =  args.img_size
@@ -106,33 +93,31 @@ if __name__ == "__main__":
     setup_logging(log_path)
 
     num_gpus = check_available_gpus()
-    mp.set_start_method('spawn')
 
-    preprocess_local = False
+    local_rank = int(os.environ['SLURM_LOCALID'])
+    os.environ['MASTER_ADDR'] = str(os.environ['HOSTNAME'])
+    os.environ['MASTER_PORT'] = "29500"
+    os.environ['WORLD_SIZE'] = os.environ['SLURM_NTASKS']
+    os.environ['RANK'] = os.environ['SLURM_PROCID']
 
-    if (num_gpus > 1):
-        processes = []
-        for rank in range(num_gpus):
-            p = torch.multiprocessing.Process(target=init_process, 
-                                              args=(rank, num_gpus, 
-                                                    root_dir, preporcess_dir, preprocess_local,
-                                                    batch_size, weight_path,
-                                                    train, log_path))
-            p.start()
-            processes.append(p)
+    print("MASTER_ADDR:{}, MASTER_PORT:{}, WORLD_SIZE:{}, WORLD_RANK:{}, local_rank:{}".format(os.environ['MASTER_ADDR'], 
+                                                    os.environ['MASTER_PORT'], 
+                                                    os.environ['WORLD_SIZE'], 
+                                                    os.environ['RANK'],
+                                                    local_rank))
+    
+    dist.init_process_group(                                   
+    	backend='nccl',                                         
+   		init_method='env://',                                   
+    	world_size=args.world_size,                              
+    	rank=int(os.environ['RANK'])                                               
+    )
 
-        for p in processes:
-            p.join()
-    else:
-        train(0, num_gpus, root_dir, preporcess_dir, weight_path,
-         model_type = 'vit_base_patch16_224',
-         preprocess_local = False, 
-         batch_size = 32, img_size = 224, num_patches = 196, embed_dim = 768, 
-         to_size = (8, 8, 3),
-         num_classes = 1000)
+    print("SLURM_LOCALID/lcoal_rank:{}, dist_rank:{}".format(local_rank, dist.get_rank()))
 
+    print(f"Start running basic DDP example on rank {local_rank}.")
+    device_id = local_rank % torch.cuda.device_count()
+    train(device_id, num_gpus, root_dir, preporcess_dir, weight_path, 
+          batch_size = batch_size, img_size = img_size, num_patches = num_patches)
 
-
-
-
-
+    dist.destroy_process_group()
