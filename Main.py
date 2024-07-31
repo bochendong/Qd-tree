@@ -22,7 +22,6 @@ def init_process(rank, num_gpus, root_dir, preporcess_dir, preprocess_local,
                  train_fn, log_path, backend='nccl'):
 
     setup_logging(log_path)
-    logging.info('-' * 8 + f"Init Process at Rank {rank}" + '-' * 8)
     
     os.environ['MASTER_ADDR'] = str(os.environ['HOSTNAME'])
     os.environ['MASTER_PORT'] = '29500'
@@ -38,7 +37,6 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
          to_size = (8, 8, 3),
          num_classes = 1000):
     
-    logging.info('-' * 8 + f"Device {rank} Training Start" + '-' * 8)
     torch.manual_seed(0)
     device = torch.device(f'cuda:{rank}')
 
@@ -52,13 +50,12 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
     weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}.pth'
 
     if (preprocess_local == False): 
-        logging.info('-' * 8 + f"Device {rank} Dataloader Started" + '-' * 8)
         dataset = ImageNetDataset(root_dir=root_dir, transform=transform, 
                                   img_size = img_size, to_size = to_size, 
                                   num_patches = num_patches)
-        logging.info('-' * 8 + f"Device {rank} Dataloader Created" + '-' * 8)
+
     else:
-        logging.info('-' * 8 + "Preprocess images to local" + '-' * 8)
+        logging.info('-' * 8 + f"Device {rank}, Preprocess images to local" + '-' * 8)
         preprocess_image(root_dir, preporcess_dir, img_size = img_size, 
                          to_size = to_size, fixed_length = num_patches)
         
@@ -72,11 +69,12 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
         model.load_state_dict(torch.load(weight_path, map_location=device))
     
     if (num_gpus > 1):
-        sampler = DistributedSampler(dataset, num_replicas=num_gpus, rank=rank)
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1, sampler=sampler)
+        sampler = DistributedSampler(dataset)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, sampler=sampler)
+        logging.info('-' * 8 + f"Device {rank} Dataloader created" + '-' * 8)
         model = DDP(model, device_ids=[rank])
     else:
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=1)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     
     criterion = nn.CrossEntropyLoss()
