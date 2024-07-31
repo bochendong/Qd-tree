@@ -12,10 +12,15 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
 
+            logging.info(f"Input {inputs.size()}, Label {labels.size()}")
+
             optimizer.zero_grad()
 
             outputs = model(inputs)
+            logging.info(f"outputs {outputs.size()}")
+
             loss = criterion(outputs, labels)
+            logging.info(f"loss: {loss}")
             loss.backward()
             optimizer.step()
 
@@ -25,9 +30,8 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
             
-            if i % 100 == 99:
-                logging.info(f"[Epoch {epoch + 1}, Batch {i + 1}] Loss: {running_loss / 100:.3f}")
-                running_loss = 0.0
+            logging.info(f"[Epoch {epoch + 1}, Batch {i + 1}] Loss: {running_loss / 100:.3f}")
+            running_loss = 0.0
 
         accuracy = 100 * correct / total
         logging.info(f"[Epoch {epoch + 1}] Acc: {accuracy:.2f}%")
