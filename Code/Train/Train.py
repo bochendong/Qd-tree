@@ -2,6 +2,7 @@ import logging
 import torch
 
 def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, scheduler, rank, device):
+    logging.info('-' * 8 + f"Device {rank} Start Training" + '-' * 8)
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0

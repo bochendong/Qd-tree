@@ -52,10 +52,11 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
     weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}.pth'
 
     if (preprocess_local == False): 
-        logging.info('-' * 8 + f"Device {rank} Dataloader Created" + '-' * 8)
+        logging.info('-' * 8 + f"Device {rank} Dataloader Started" + '-' * 8)
         dataset = ImageNetDataset(root_dir=root_dir, transform=transform, 
                                   img_size = img_size, to_size = to_size, 
                                   num_patches = num_patches)
+        logging.info('-' * 8 + f"Device {rank} Dataloader Created" + '-' * 8)
     else:
         logging.info('-' * 8 + "Preprocess images to local" + '-' * 8)
         preprocess_image(root_dir, preporcess_dir, img_size = img_size, 
