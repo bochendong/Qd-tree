@@ -17,5 +17,4 @@ module load PrgEnv-gnu
 module load gcc/12.2.0
 module load rocm/5.7.0
 # exec
-srun -N 1 -n 8 --ntasks-per-node 8 /lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Main.py \
-        --batch_size 256
+srun -N 1 -n 8 --ntasks-per-node 8 python Main.py --batch_size 256
