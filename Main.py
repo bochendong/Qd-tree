@@ -29,6 +29,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
 
     transform = transforms.Compose([
         transforms.ToPILImage(),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
@@ -51,7 +52,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
 
     model = get_model(model_type, num_classes, num_patches, embed_dim, to_size)
     model = model.to(device)
-    
+
     if os.path.exists(weight_path):
         model.load_state_dict(torch.load(weight_path, map_location=device))
     

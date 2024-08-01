@@ -33,6 +33,15 @@ class ImageNetDataset(Dataset):
         img_path = self.img_paths[idx]
         label = self.labels[idx]
         
+        img = cv.imread(img_path)
+        
+        if self.transform:
+            img = self.transform(img)
+        
+        return img, label
+    
+
+
         '''if (self.preprocess_local):
             img = cv.imread(img_path)
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
@@ -45,10 +54,3 @@ class ImageNetDataset(Dataset):
             except AssertionError:
                 # logging.info(img_path)
                 return self.__getitem__((idx + 1) % len(self))'''
-        
-        img = cv.imread(img_path)
-        
-        if self.transform:
-            img = self.transform(img)
-        
-        return img, label
