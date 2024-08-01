@@ -51,6 +51,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
 
     model = get_model(model_type, num_classes, num_patches, embed_dim, to_size)
     model = model.to(device)
+    
     if os.path.exists(weight_path):
         model.load_state_dict(torch.load(weight_path, map_location=device))
     

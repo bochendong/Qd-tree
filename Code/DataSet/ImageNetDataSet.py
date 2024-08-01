@@ -33,7 +33,7 @@ class ImageNetDataset(Dataset):
         img_path = self.img_paths[idx]
         label = self.labels[idx]
         
-        if (self.preprocess_local):
+        '''if (self.preprocess_local):
             img = cv.imread(img_path)
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
             if img is None:
@@ -44,7 +44,9 @@ class ImageNetDataset(Dataset):
                 img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
             except AssertionError:
                 # logging.info(img_path)
-                return self.__getitem__((idx + 1) % len(self))
+                return self.__getitem__((idx + 1) % len(self))'''
+        
+        img = cv.imread(img_path)
         
         if self.transform:
             img = self.transform(img)
