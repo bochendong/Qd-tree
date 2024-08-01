@@ -31,7 +31,7 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
                 
-                logging.info(f"[Epoch {epoch + 1}, Batch {i + 1}] Loss: {running_loss / 100:.3f}")
+                logging.info(f"Device {rank} [Epoch {epoch + 1}, Batch {i + 1}] Loss: {running_loss / 100:.3f}")
                 running_loss = 0.0
 
         if (rank == 0):

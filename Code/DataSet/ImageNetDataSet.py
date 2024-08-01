@@ -43,7 +43,7 @@ class ImageNetDataset(Dataset):
             try:
                 img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
             except AssertionError:
-                logging.info(img_path)
+                # logging.info(img_path)
                 return self.__getitem__((idx + 1) % len(self))
         
         if self.transform:
