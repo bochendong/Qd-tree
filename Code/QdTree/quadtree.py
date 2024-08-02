@@ -3,50 +3,52 @@ import cv2 as cv
 
 class Rect:
     def __init__(self, x1, x2, y1, y2) -> None:
-        # *q
-        # p*
         self.x1 = x1
         self.x2 = x2
         self.y1 = y1
         self.y2 = y2
         
-        assert x1<=x2, 'x1 > x2, wrong coordinate.'
-        assert y1<=y2, 'y1 > y2, wrong coordinate.'
+        assert x1 <= x2, 'x1 > x2, wrong coordinate.'
+        assert y1 <= y2, 'y1 > y2, wrong coordinate.'
     
     def contains(self, domain):
         patch = domain[self.y1:self.y2, self.x1:self.x2]
-        return int(np.sum(patch)/255)
+        return int(np.sum(patch) / 255)
     
     def get_area(self, img):
         return img[self.y1:self.y2, self.x1:self.x2, :]
     
     def set_area(self, mask, patch):
-        # import pdb
-        # pdb.set_trace()
         patch_size = self.get_size()
-        # patch = np.resize(patch, patch_size)
         patch = patch.astype('float32')
-        patch = cv.resize(patch, interpolation=cv.INTER_CUBIC , dsize=patch_size)
-        # patch = np.expand_dims(patch, axis=-1)
+        patch = cv.resize(patch, interpolation=cv.INTER_CUBIC, dsize=patch_size)
         mask[self.y1:self.y2, self.x1:self.x2, :] = patch
         return mask
     
     def get_coord(self):
-        return self.x1,self.x2,self.y1,self.y2
+        return self.x1, self.x2, self.y1, self.y2
     
     def get_size(self):
-        return self.x2-self.x1, self.y2-self.y1
+        return self.x2 - self.x1, self.y2 - self.y1
+    
+    def make_square(self):
+        width = self.x2 - self.x1
+        height = self.y2 - self.y1
+        if width > height:
+            diff = width - height
+            self.y2 += diff
+        elif height > width:
+            diff = height - width
+            self.x2 += diff
     
     def draw(self, ax, c='grey', lw=0.5, **kwargs):
-        # Create a Rectangle patch
         import matplotlib.patches as patches
         rect = patches.Rectangle((self.x1, self.y1), 
-                                 width=self.x2-self.x1, 
-                                 height=self.y2-self.y1, 
+                                 width=self.x2 - self.x1, 
+                                 height=self.y2 - self.y1, 
                                  linewidth=lw, edgecolor='w', facecolor='none')
         ax.add_patch(rect)
-    
-                 
+
 class FixedQuadTree:
     def __init__(self, domain, fixed_length=128, build_from_info=False, meta_info=None) -> None:
         self.domain = domain
@@ -58,88 +60,101 @@ class FixedQuadTree:
     
     def nodes_value(self):
         meta_value = []
-        for rect,v in self.nodes:
-            size,_ = rect.get_size()
+        for rect, v in self.nodes:
+            size, _ = rect.get_size()
             meta_value += [[v, size]]
         return meta_value
     
     def encode_nodes(self):
         meta_info = []
-        for rect,v in self.nodes:
-            meta_info += [[rect.x1,rect.x2,rect.y1,rect.y2]]
+        for rect, v in self.nodes:
+            meta_info += [[rect.x1, rect.x2, rect.y1, rect.y2]]
         return meta_info
     
     def decoder_nodes(self, meta_info):
         nodes = []
         for info in meta_info:
-            x1,x2,y1,y2 = info
+            x1, x2, y1, y2 = info
             n = Rect(x1, x2, y1, y2)
             v = n.contains(self.domain)
-            nodes +=  [[n,v]] 
+            nodes += [[n, v]]
         return nodes
             
     def _build_tree(self):
-    
-        h,w = self.domain.shape
-        assert h>0 and w >0, "Wrong img size."
-        root = Rect(0,w,0,h)
+        h, w = self.domain.shape
+        assert h > 0 and w > 0, "Wrong img size."
+        root = Rect(0, w, 0, h)
+        root.make_square()  # Make the root square if necessary
         self.nodes = [[root, root.contains(self.domain)]]
-        while len(self.nodes)<self.fixed_length:
-            bbox, value = max(self.nodes, key=lambda x:x[1])
-            # if sum(bbox.get_size())<4:
-            #     bbox, value = max(self.nodes, key=lambda x:sum(x[0].get_size()))
-                
+        while len(self.nodes) < self.fixed_length:
+            bbox, value = max(self.nodes, key=lambda x: x[1])
             idx = self.nodes.index([bbox, value])
-            if sum(bbox.get_size())<4:
+            if min(bbox.get_size()) < 2:
                 break
 
-            x1,x2,y1,y2 = bbox.get_coord()
-            lt = Rect(x1, int((x1+x2)/2), int((y1+y2)/2), y2)
+            x1, x2, y1, y2 = bbox.get_coord()
+            mid_x = (x1 + x2) // 2
+            mid_y = (y1 + y2) // 2
+
+            lt = Rect(x1, mid_x, mid_y, y2)
+            rt = Rect(mid_x, x2, mid_y, y2)
+            lb = Rect(x1, mid_x, y1, mid_y)
+            rb = Rect(mid_x, x2, y1, mid_y)
+
+            # Ensure that all new rectangles are square
+            lt.make_square()
+            rt.make_square()
+            lb.make_square()
+            rb.make_square()
+            
             v1 = lt.contains(self.domain)
-            rt = Rect(int((x1+x2)/2), x2, int((y1+y2)/2), y2)
             v2 = rt.contains(self.domain)
-            lb = Rect(x1, int((x1+x2)/2), y1, int((y1+y2)/2))
             v3 = lb.contains(self.domain)
-            rb = Rect(int((x1+x2)/2), x2, y1, int((y1+y2)/2))
             v4 = rb.contains(self.domain)
             
-            self.nodes = self.nodes[:idx] + [[lt,v1], [rt,v2], [lb,v3], [rb,v4]] +  self.nodes[idx+1:]
-
-            # print([v for _,v in self.nodes])
+            self.nodes = self.nodes[:idx] + [[lt, v1], [rt, v2], [lb, v3], [rb, v4]] + self.nodes[idx+1:]
             
+        while len(self.nodes) > self.fixed_length:
+            self.nodes.pop()
+        while len(self.nodes) < self.fixed_length:
+            self.nodes.append([Rect(0, 0, 0, 0), 0])
+    
     def count_patches(self):
         return len(self.nodes)
     
-    def serialize(self, img, size=(8,8,3)):
+    def serialize(self, img, size=(8, 8, 3)):
         seq_patch = []
-        for bbox,value in self.nodes:
-            seq_patch.append(bbox.get_area(img))
+        for bbox, value in self.nodes:
+            area = bbox.get_area(img)
+            h1, w1, _ = area.shape
+            if h1 != w1:
+                if h1 > w1:
+                    diff = h1 - w1
+                    area = cv.copyMakeBorder(area, 0, 0, 0, diff, cv.BORDER_CONSTANT, value=[0, 0, 0])
+                else:
+                    diff = w1 - h1
+                    area = cv.copyMakeBorder(area, 0, diff, 0, 0, cv.BORDER_CONSTANT, value=[0, 0, 0])
+            seq_patch.append(area)
             
-        h2,w2,c2 = size
+        h2, w2, c2 = size
         for i in range(len(seq_patch)):
-            h1, w1, c1 = seq_patch[i].shape
-            assert h1==w1, "Need squared input."
             seq_patch[i] = cv.resize(seq_patch[i], (h2, w2), interpolation=cv.INTER_CUBIC)
-            # assert seq_patch[i].shape == (h2,w2,c2), "Wrong shape {} get, need {}".format(seq_patch[i].shape, (h2,w2,c2))
-        if len(seq_patch)!=self.fixed_length:
-            seq_patch += [np.zeros(shape=(h2,w2,c2))] * (self.fixed_length-len(seq_patch))
-        assert len(seq_patch)==self.fixed_length, "Not equal fixed length."
+        if len(seq_patch) != self.fixed_length:
+            seq_patch += [np.zeros(shape=(h2, w2, c2))] * (self.fixed_length - len(seq_patch))
+
+        print(f"seq_patch length: {len(seq_patch)}")
+        assert len(seq_patch) == self.fixed_length, "Not equal fixed length."
         return seq_patch
     
     def deserialize(self, seq, patch_size, channel):
-
-        # import pdb
-        # pdb.set_trace()
-        
         seq = np.reshape(seq, (self.fixed_length, patch_size, patch_size, channel))
         seq = seq.astype(int)
         mask = np.zeros(shape=self.domain.shape)
-        # mask = np.expand_dims(mask, axis=-1)
-        for idx,(bbox, value) in enumerate(self.nodes):
+        for idx, (bbox, value) in enumerate(self.nodes):
             pred_mask = seq[idx, ...]
             mask = bbox.set_area(mask, pred_mask)
         return mask
     
     def draw(self, ax, c='grey', lw=1):
-        for bbox,value in self.nodes:
+        for bbox, value in self.nodes:
             bbox.draw(ax=ax)
