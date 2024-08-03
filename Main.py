@@ -95,30 +95,35 @@ if __name__ == "__main__":
 
     num_gpus = check_available_gpus()
 
-    local_rank = int(os.environ['SLURM_LOCALID'])
-    os.environ['MASTER_ADDR'] = str(os.environ['HOSTNAME'])
-    os.environ['MASTER_PORT'] = "29500"
-    os.environ['WORLD_SIZE'] = os.environ['SLURM_NTASKS']
-    os.environ['RANK'] = os.environ['SLURM_PROCID']
+    if (num_gpus >= 1):
 
-    print("MASTER_ADDR:{}, MASTER_PORT:{}, WORLD_SIZE:{}, WORLD_RANK:{}, local_rank:{}".format(os.environ['MASTER_ADDR'], 
-                                                    os.environ['MASTER_PORT'], 
-                                                    os.environ['WORLD_SIZE'], 
-                                                    os.environ['RANK'],
-                                                    local_rank))
-    
-    dist.init_process_group(                                   
-    	backend='nccl',                                         
-   		init_method='env://',                                   
-    	world_size=args.world_size,                              
-    	rank=int(os.environ['RANK'])                                               
-    )
+        local_rank = int(os.environ['SLURM_LOCALID'])
+        os.environ['MASTER_ADDR'] = str(os.environ['HOSTNAME'])
+        os.environ['MASTER_PORT'] = "29500"
+        os.environ['WORLD_SIZE'] = os.environ['SLURM_NTASKS']
+        os.environ['RANK'] = os.environ['SLURM_PROCID']
 
-    print("SLURM_LOCALID/lcoal_rank:{}, dist_rank:{}".format(local_rank, dist.get_rank()))
+        print("MASTER_ADDR:{}, MASTER_PORT:{}, WORLD_SIZE:{}, WORLD_RANK:{}, local_rank:{}".format(os.environ['MASTER_ADDR'], 
+                                                        os.environ['MASTER_PORT'], 
+                                                        os.environ['WORLD_SIZE'], 
+                                                        os.environ['RANK'],
+                                                        local_rank))
+        
+        dist.init_process_group(                                   
+            backend='nccl',                                         
+            init_method='env://',                                   
+            world_size=args.world_size,                              
+            rank=int(os.environ['RANK'])                                               
+        )
 
-    print(f"Start running basic DDP example on rank {local_rank}.")
-    device_id = local_rank % torch.cuda.device_count()
-    train(device_id, num_gpus, root_dir, preporcess_dir, weight_path, 
-          batch_size = batch_size, img_size = img_size, num_patches = num_patches)
+        print("SLURM_LOCALID/lcoal_rank:{}, dist_rank:{}".format(local_rank, dist.get_rank()))
 
-    dist.destroy_process_group()
+        print(f"Start running basic DDP example on rank {local_rank}.")
+        device_id = local_rank % torch.cuda.device_count()
+        train(device_id, num_gpus, root_dir, preporcess_dir, weight_path, 
+            batch_size = batch_size, img_size = img_size, num_patches = num_patches)
+
+        dist.destroy_process_group()
+    else:
+        train(0, num_gpus, root_dir, preporcess_dir, weight_path, 
+            batch_size = batch_size, img_size = img_size, num_patches = num_patches)

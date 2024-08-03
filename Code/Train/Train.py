@@ -12,15 +12,11 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
 
-            # logging.info(f"Input {inputs.size()}, Label {labels.size()}")
-
             optimizer.zero_grad()
 
             outputs = model(inputs)
-            # logging.info(f"outputs {outputs.size()}")
 
             loss = criterion(outputs, labels)
-            # logging.info(f"loss: {loss}")
             loss.backward()
             optimizer.step()
 
