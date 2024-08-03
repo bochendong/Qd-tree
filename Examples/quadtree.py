@@ -1,5 +1,6 @@
 import numpy as np
 import cv2 as cv
+import matplotlib.pyplot as plt
 
 class Rect:
     def __init__(self, x1, x2, y1, y2) -> None:
@@ -113,7 +114,8 @@ class FixedQuadTree:
             v4 = rb.contains(self.domain)
             
             self.nodes = self.nodes[:idx] + [[lt, v1], [rt, v2], [lb, v3], [rb, v4]] + self.nodes[idx+1:]
-            
+        
+        # Ensure we have exactly fixed_length nodes
         while len(self.nodes) > self.fixed_length:
             self.nodes.pop()
         while len(self.nodes) < self.fixed_length:
@@ -126,6 +128,8 @@ class FixedQuadTree:
         seq_patch = []
         for bbox, value in self.nodes:
             area = bbox.get_area(img)
+            if area.size == 0:  # Skip empty patches
+                continue
             h1, w1, _ = area.shape
             if h1 != w1:
                 if h1 > w1:
@@ -138,10 +142,13 @@ class FixedQuadTree:
             
         h2, w2, c2 = size
         for i in range(len(seq_patch)):
+            if seq_patch[i].size == 0:  # Skip empty patches
+                continue
             seq_patch[i] = cv.resize(seq_patch[i], (h2, w2), interpolation=cv.INTER_CUBIC)
         if len(seq_patch) != self.fixed_length:
             seq_patch += [np.zeros(shape=(h2, w2, c2))] * (self.fixed_length - len(seq_patch))
 
+        print(f"seq_patch length: {len(seq_patch)}")
         assert len(seq_patch) == self.fixed_length, "Not equal fixed length."
         return seq_patch
     
