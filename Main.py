@@ -125,5 +125,6 @@ if __name__ == "__main__":
 
         dist.destroy_process_group()
     else:
+        torch.cuda.empty_cache()
         train(0, num_gpus, root_dir, preporcess_dir, weight_path, 
             batch_size = batch_size, img_size = img_size, num_patches = num_patches)
