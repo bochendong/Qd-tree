@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     num_gpus = check_available_gpus()
 
-    if (num_gpus >= 1):
+    if (num_gpus > 1):
         args.world_size = int(os.environ['SLURM_NTASKS'])
 
         local_rank = int(os.environ['SLURM_LOCALID'])
