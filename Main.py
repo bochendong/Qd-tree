@@ -80,7 +80,6 @@ if __name__ == "__main__":
     parser.add_argument('--img_size', type=int,  default=224, help='Image Size.')
     parser.add_argument('--num_patches', type=int,  default=196, help='Number of Patches.')
     args = parser.parse_args()
-    args.world_size = int(os.environ['SLURM_NTASKS'])
 
     batch_size = args.batch_size
     img_size =  args.img_size
@@ -96,6 +95,7 @@ if __name__ == "__main__":
     num_gpus = check_available_gpus()
 
     if (num_gpus >= 1):
+        args.world_size = int(os.environ['SLURM_NTASKS'])
 
         local_rank = int(os.environ['SLURM_LOCALID'])
         os.environ['MASTER_ADDR'] = str(os.environ['HOSTNAME'])
