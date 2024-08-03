@@ -42,8 +42,9 @@ class ImageNetDataset(Dataset):
         else:
             try:
                 img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
-            except:
-                logging.info(img_path)
+            except Exception as e:
+                logging.exception(img_path)
+                logging.exception(f"An error occurred while processing {img_path}: {str(e)}")
                 return self.__getitem__((idx + 1) % len(self))
         
         if self.transform:
