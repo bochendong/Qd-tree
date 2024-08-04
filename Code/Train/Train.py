@@ -10,6 +10,15 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
         correct = 0
         total = 0
         for i, data in enumerate(dataloader):
+            try:
+                logging.info(f"Device {rank} Processing Batch {i + 1}")
+                # Existing processing code
+            except Exception as e:
+                logging.error(f"Error on Device {rank} at Batch {i + 1}: {e}")
+                raise e
+            finally:
+                torch.cuda.synchronize(device)
+
             '''
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
