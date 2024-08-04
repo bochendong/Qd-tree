@@ -57,9 +57,9 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
     
     if (num_gpus > 1):
         sampler = DistributedSampler(dataset)
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, sampler=sampler)
+        dataloader = DataLoader(dataset, batch_size=batch_size, sampler=sampler)
         logging.info('-' * 8 + f"Device {rank} Dataloader created" + '-' * 8)
-        model = DDP(model, device_ids=[rank])
+        model = DDP(model, device_ids=[rank], find_unused_parameters=False)
     else:
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 

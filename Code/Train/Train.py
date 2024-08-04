@@ -5,6 +5,7 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
     logging.info('-' * 8 + f"Device {rank} Start Training" + '-' * 8)
     for epoch in range(num_epochs):
         model.train()
+        dataloader.sampler.set_epoch(epoch)
         running_loss = 0.0
         correct = 0
         total = 0
@@ -33,8 +34,8 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
 
         '''if (rank == 0):
             accuracy = 100 * correct / total
-            logging.info(f"[Epoch {epoch + 1}] Acc: {accuracy:.2f}%")'''
-
+            logging.info(f"[Epoch {epoch + 1}] Acc: {accuracy:.2f}%")
+        '''
         scheduler.step()
 
         if rank == 0 and (epoch + 1) % 10 == 0:
