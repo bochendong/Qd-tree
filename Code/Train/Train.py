@@ -11,7 +11,10 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
         total = 0
         for i, data in enumerate(dataloader):
             try:
-                logging.info(f"Device {rank} Processing Batch {i + 1}")
+                inputs, labels = data
+                logging.info(f"Device {rank} Batch {i + 1}: inputs size: {inputs.size()}, labels size: {labels.size()}")
+                inputs, labels = inputs.to(device), labels.to(device)
+                logging.info(f"Device {rank} Batch {i + 1}: inputs min: {inputs.min()}, inputs max: {inputs.max()}")
                 # Existing processing code
             except Exception as e:
                 logging.error(f"Error on Device {rank} at Batch {i + 1}: {e}")
