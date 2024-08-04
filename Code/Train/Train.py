@@ -9,6 +9,7 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
         correct = 0
         total = 0
         for i, data in enumerate(dataloader):
+            '''
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
 
@@ -20,7 +21,7 @@ def learn(model, dataloader, weight_path, num_epochs, optimizer, criterion, sche
             loss.backward()
             optimizer.step()
 
-            '''if (rank == 0):
+            if (rank == 0):
                 running_loss += loss.item()
                 
                 _, predicted = torch.max(outputs, 1)
