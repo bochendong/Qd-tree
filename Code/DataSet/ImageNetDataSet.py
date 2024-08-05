@@ -40,12 +40,7 @@ class ImageNetDataset(Dataset):
                 return self.__getitem__((idx + 1) % len(self))
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         else:
-            try:
-                img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
-            except Exception as e:
-                logging.exception(img_path)
-                logging.exception(f"An error occurred while processing {img_path}: {str(e)}")
-                return self.__getitem__((idx + 1) % len(self))
+            img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
         
         if self.transform:
             img = self.transform(img)

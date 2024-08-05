@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.distributed as dist
 from torchvision import transforms
 from torch.optim.lr_scheduler import StepLR
-from torch.utils.data import DataLoader, DistributedSampler
+from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from Code.Train.Train import learn
@@ -56,7 +56,7 @@ def train(rank, num_gpus, root_dir, preporcess_dir, weight_path,
         model.load_state_dict(torch.load(weight_path, map_location=device))
     
     if (num_gpus > 1):
-        sampler = DistributedSampler(dataset)
+        sampler = torch.utils.data.distributed.DistributedSampler(dataset)
         dataloader = DataLoader(dataset, batch_size=batch_size, sampler=sampler)
         logging.info('-' * 8 + f"Device {rank} Dataloader created" + '-' * 8)
         model = DDP(model, device_ids=[rank], find_unused_parameters=False)
