@@ -35,7 +35,7 @@ class ImageNetDataset(Dataset):
         label = self.labels[idx]
         
         img = cv.imread(img_path)
-        
+
         if (self.preprocess_local):
             img = cv.imread(img_path)
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
@@ -44,7 +44,7 @@ class ImageNetDataset(Dataset):
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         else:
             # img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
-            pass
+            _, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
         
         if self.transform:
             img = self.transform(img)

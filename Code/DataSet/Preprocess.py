@@ -17,6 +17,9 @@ def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=19
 
     edges = cv.Canny(grey_img, 80, 100)
 
+    return 0, 0
+
+    '''
     qdt = FixedQuadTree(domain=edges, fixed_length=fixed_length)
 
     seq_img = qdt.serialize(img, size=to_size)
@@ -24,6 +27,7 @@ def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=19
     seq_img = np.reshape(seq_img, [to_size[0], -1, to_size[2]])
 
     return seq_img, qdt
+    '''
 
 def process_single_image(args):
     img_path, out_img_path, to_size, fixed_length, img_size = args
