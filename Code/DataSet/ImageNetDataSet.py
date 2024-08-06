@@ -1,6 +1,7 @@
 import os
 import cv2 as cv
 import logging
+import torch
 from Code.DataSet.Preprocess import seqence_image
 from torch.utils.data import Dataset
 
@@ -45,7 +46,7 @@ class ImageNetDataset(Dataset):
         if self.transform:
             img = self.transform(img)
         
-        return img, label
+        return torch.rand(3, 8, 1568), 0
     
 
 
