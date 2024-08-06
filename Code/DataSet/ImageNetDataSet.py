@@ -44,7 +44,6 @@ class ImageNetDataset(Dataset):
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         else:
             img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
-            # _, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
         
         if self.transform:
             img = self.transform(img)
