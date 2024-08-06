@@ -11,15 +11,13 @@ def seqence_image(image_path, img_size = 224, to_size=(8, 8, 3), fixed_length=19
     img = cv.imread(image_path)
     img = cv.resize(img, (img_size, img_size))
     img = img[..., ::-1]
-
+    return 0, 0
+    '''
     grey_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # grey_img = cv.GaussianBlur(grey_img, (3, 3), 0)
 
     edges = cv.Canny(grey_img, 80, 100)
 
-    return 0, 0
-
-    '''
     qdt = FixedQuadTree(domain=edges, fixed_length=fixed_length)
 
     seq_img = qdt.serialize(img, size=to_size)
