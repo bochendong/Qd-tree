@@ -43,13 +43,13 @@ class ImageNetDataset(Dataset):
                 return self.__getitem__((idx + 1) % len(self))
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         else:
-            # img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
-            _, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
+            img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
+            # _, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
         
         if self.transform:
             img = self.transform(img)
         
-        return torch.rand(3, 8, 1568), 0
+        return img, label
     
 
 
