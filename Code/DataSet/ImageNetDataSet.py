@@ -34,6 +34,8 @@ class ImageNetDataset(Dataset):
         img_path = self.img_paths[idx]
         label = self.labels[idx]
         
+        img = cv.imread(img_path)
+        
         if (self.preprocess_local):
             img = cv.imread(img_path)
             img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
