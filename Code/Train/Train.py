@@ -45,7 +45,7 @@ def learn(model, train_dl, test_dl, weight_path, num_epochs, optimizer, criterio
             loss.backward()
             optimizer.step()
 
-            if (i % 100 == 0):
+            if (i % 40 == 0):
                 running_loss += loss.item()
                     
                 _, predicted = torch.max(outputs, 1)
