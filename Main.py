@@ -100,7 +100,7 @@ if __name__ == "__main__":
     num_patches = args.num_patches
 
     train_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
-    test_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/test/"
+    test_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/val/"
 
     preporcess_dir = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preprocess_data/"
     weight_path = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Weight/"
