@@ -17,4 +17,4 @@ module load PrgEnv-gnu
 module load gcc/12.2.0
 module load rocm/5.7.0
 # exec
-srun -N 1 -n 2 --ntasks-per-node 2 python Main.py --batch_size 256
+srun -N 1 -n 1 --ntasks-per-node 1 python Main.py --batch_size 256
