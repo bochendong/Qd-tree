@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
         print(f"Start running basic DDP example on rank {local_rank}.")
         device_id = local_rank % torch.cuda.device_count()
-        train(device_id, num_gpus, train_dir, preporcess_dir, weight_path, 
+        train(device_id, num_gpus, train_dir, test_dir, preporcess_dir, weight_path, 
             batch_size = batch_size, img_size = img_size, num_patches = num_patches)
 
         dist.destroy_process_group()
