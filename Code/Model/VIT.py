@@ -21,13 +21,17 @@ class PatchEmbedding(nn.Module):
         x = self.norm(x)
         return x
     
-def get_model(model_type, num_classes, num_patches = 196, embed_dim = 768, to_size = (8, 8, 3)):
+def get_model(model_type, num_classes, num_patches = 196, embed_dim = 768, to_size = (8, 8, 3), use_qdt = True):
     if (model_type == 'vit_base_patch16_224'):
-        model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=num_classes)
-        model.patch_embed = PatchEmbedding(patch_size = to_size[0], num_patches = num_patches, embed_dim = embed_dim)
-        model.pos_embed = nn.Parameter(torch.randn(1, num_patches + model.num_prefix_tokens, embed_dim) * .02)
+        if (use_qdt):
+            model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=num_classes)
+            model.patch_embed = PatchEmbedding(patch_size = to_size[0], num_patches = num_patches, embed_dim = embed_dim)
+            model.pos_embed = nn.Parameter(torch.randn(1, num_patches + model.num_prefix_tokens, embed_dim) * .02)
 
-        return model
+            return model
+        else:
+            model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=num_classes)
+            return model
     else:
         print("Model is not supported")
     

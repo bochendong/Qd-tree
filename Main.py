@@ -22,7 +22,7 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
          preprocess_local = False, 
          batch_size = 128, img_size = 224, num_patches = 196, embed_dim = 768, 
          to_size = (8, 8, 3),
-         num_classes = 1000):
+         num_classes = 1000, use_qdt = True):
     
     torch.manual_seed(0)
     device = torch.device(f'cuda:{rank}')
@@ -35,32 +35,41 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
 
     weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}.pth'
 
-    if (preprocess_local == False): 
-        train_set = ImageNetDataset(root_dir=train_dir, transform=transform, 
-                                  img_size = img_size, to_size = to_size, 
-                                  num_patches = num_patches)
-        
-        test_set = ImageNetDataset(root_dir=test_dir, transform=transform, 
-                                  img_size = img_size, to_size = to_size, 
-                                  num_patches = num_patches)
+    if (use_qdt):
+        if (preprocess_local == False): 
+            train_set = ImageNetDataset(root_dir=train_dir, transform=transform, 
+                                    img_size = img_size, to_size = to_size, 
+                                    num_patches = num_patches)
+            
+            test_set = ImageNetDataset(root_dir=test_dir, transform=transform, 
+                                    img_size = img_size, to_size = to_size, 
+                                    num_patches = num_patches)
+        else:
+            preprocess_image(train_dir, preporcess_dir + f"{num_patches}_{to_size}/train/", 
+                            img_size = img_size, 
+                            to_size = to_size, fixed_length = num_patches)
+
+            preprocess_image(test_dir,  preporcess_dir + f"{num_patches}_{to_size}/test/", 
+                            img_size = img_size, to_size = to_size, fixed_length = num_patches)
+            
+            train_set = ImageNetDataset(root_dir= preporcess_dir + f"{num_patches}_{to_size}/train/", 
+                                        transform=transform, preprocess_local = True, img_size = img_size, 
+                                    to_size = to_size, num_patches = num_patches)
+            
+            test_set = ImageNetDataset(root_dir= preporcess_dir + f"{num_patches}_{to_size}/test/", 
+                                    transform=transform, img_size = img_size, to_size = to_size, 
+                                    num_patches = num_patches)
     else:
-        preprocess_image(train_dir, preporcess_dir + f"{num_patches}_{to_size}/train/", 
-                         img_size = img_size, 
-                         to_size = to_size, fixed_length = num_patches)
-
-        preprocess_image(test_dir,  preporcess_dir + f"{num_patches}_{to_size}/test/", 
-                         img_size = img_size, to_size = to_size, fixed_length = num_patches)
-        
-        train_set = ImageNetDataset(root_dir= preporcess_dir + f"{num_patches}_{to_size}/train/", 
-                                    transform=transform, preprocess_local = True, img_size = img_size, 
-                                  to_size = to_size, num_patches = num_patches)
-        
-        test_set = ImageNetDataset(root_dir= preporcess_dir + f"{num_patches}_{to_size}/test/", 
-                                   transform=transform, img_size = img_size, to_size = to_size, 
-                                  num_patches = num_patches)
+        train_set = ImageNetDataset(root_dir=train_dir, transform=transform, 
+                                    img_size = img_size, to_size = to_size, 
+                                    num_patches = num_patches, use_qdt = use_qdt)
+            
+        test_set = ImageNetDataset(root_dir=test_dir, transform=transform, 
+                                    img_size = img_size, to_size = to_size, 
+                                    num_patches = num_patches, use_qdt = use_qdt)
 
 
-    model = get_model(model_type, num_classes, num_patches, embed_dim, to_size)
+    model = get_model(model_type, num_classes, num_patches, embed_dim, to_size, use_qdt)
     model = model.to(device)
 
     if os.path.exists(weight_path):
@@ -90,7 +99,7 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Patchify dataset.')
-    parser.add_argument('--batch_size', type=int,  default=128, help='Batch Size.')
+    parser.add_argument('--batch_size', type=int,  default=256, help='Batch Size.')
     parser.add_argument('--img_size', type=int,  default=224, help='Image Size.')
     parser.add_argument('--num_patches', type=int,  default=196, help='Number of Patches.')
     args = parser.parse_args()
@@ -98,13 +107,14 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     img_size =  args.img_size
     num_patches = args.num_patches
+    use_qdt = False
 
     train_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
     test_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/val/"
 
     preporcess_dir = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/preprocess_data/"
     weight_path = "/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Weight/"
-    log_path = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Log/img_size_{img_size}_num_patches_{num_patches}.log"
+    log_path = f"/lustre/orion/bif146/world-shared/enzhi/qdt_imagenet/Qd-tree/Log/img_size_{img_size}_num_patches_{num_patches}_use_qdt_{use_qdt}.log"
 
     setup_logging(log_path)
 

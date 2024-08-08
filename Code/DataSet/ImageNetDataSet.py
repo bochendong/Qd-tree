@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 class ImageNetDataset(Dataset):
     def __init__(self, root_dir, preprocess_local = False,
                  img_size = 224, to_size=(8, 8, 3), num_patches=196,
-                 transform=None):
+                 transform=None, use_qdt = True):
         
         self.root_dir = root_dir
         self.transform = transform
@@ -17,6 +17,7 @@ class ImageNetDataset(Dataset):
         self.img_size = img_size
         self.to_size = to_size
         self.num_patches = num_patches
+        self.use_qdt = use_qdt
         self.img_paths = []
         self.labels = []
         
@@ -36,14 +37,16 @@ class ImageNetDataset(Dataset):
         
         img = cv.imread(img_path)
 
-        if (self.preprocess_local):
-            img = cv.imread(img_path)
-            img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            if img is None:
-                return self.__getitem__((idx + 1) % len(self))
-            img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        else:
-            img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
+        if self.use_qdt:
+            if (self.preprocess_local):
+                img = cv.imread(img_path)
+                img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+                if img is None:
+                    return self.__getitem__((idx + 1) % len(self))
+                img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+            else:
+                img, _ = seqence_image(img_path, self.img_size, self.to_size, self.num_patches)
+        
         
         if self.transform:
             img = self.transform(img)
