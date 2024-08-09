@@ -33,7 +33,7 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}.pth'
+    weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}_use_qdt_{use_qdt}.pth'
 
     if (use_qdt):
         if (preprocess_local == False): 
@@ -85,6 +85,7 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
         model = DDP(model, device_ids=[rank], find_unused_parameters=False)
     else:
         train_dl = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+        test_dl = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
     
     criterion = nn.CrossEntropyLoss()
