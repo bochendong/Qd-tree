@@ -17,5 +17,5 @@ module load PrgEnv-gnu
 module load gcc/12.2.0
 module load rocm/5.7.0
 # exec
-srun -N 1 -n 2 --ntasks-per-node 2 /lustre/orion/bif146/world-shared/gvit/env/miniconda3/envs/gvit/bin/python Main.py --batch_size 256
+srun -N 1 -n 8 --ntasks-per-node 8 /lustre/orion/bif146/world-shared/gvit/env/miniconda3/envs/gvit/bin/python Main.py --batch_size 256
 
