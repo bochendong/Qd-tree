@@ -39,7 +39,6 @@ class ImageNetDataset(Dataset):
 
         if self.use_qdt:
             if (self.preprocess_local):
-                img = cv.imread(img_path)
                 img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
                 if img is None:
                     return self.__getitem__((idx + 1) % len(self))

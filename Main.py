@@ -27,11 +27,19 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
     torch.manual_seed(0)
     device = torch.device(f'cuda:{rank}')
 
-    transform = transforms.Compose([
-        transforms.ToPILImage(),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
+    if use_qdt:
+        transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+    else:
+        transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize((img_size, img_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
 
     weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}_use_qdt_{use_qdt}.pth'
 
