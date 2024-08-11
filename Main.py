@@ -8,6 +8,7 @@ from torchvision import transforms
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel as DDP
+import torchvision.datasets as datasets
 
 from Code.Train.Train import learn
 from Code.Model.VIT import get_model
@@ -27,23 +28,17 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
     torch.manual_seed(0)
     device = torch.device(f'cuda:{rank}')
 
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+
+
     if use_qdt:
         transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
-    else:
-        transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize((img_size, img_size)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            normalize,
         ])
 
-    weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}_use_qdt_{use_qdt}.pth'
-
-    if (use_qdt):
         if (preprocess_local == False): 
             train_set = ImageNetDataset(root_dir=train_dir, transform=transform, 
                                     img_size = img_size, to_size = to_size, 
@@ -67,15 +62,27 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
             test_set = ImageNetDataset(root_dir= preporcess_dir + f"{num_patches}_{to_size}/test/", 
                                     transform=transform, img_size = img_size, to_size = to_size, 
                                     num_patches = num_patches)
-    else:
-        train_set = ImageNetDataset(root_dir=train_dir, transform=transform, 
-                                    img_size = img_size, to_size = to_size, 
-                                    num_patches = num_patches, use_qdt = use_qdt)
-            
-        test_set = ImageNetDataset(root_dir=test_dir, transform=transform, 
-                                    img_size = img_size, to_size = to_size, 
-                                    num_patches = num_patches, use_qdt = use_qdt)
 
+    else:
+        train_set = datasets.ImageFolder(
+            train_dir,
+            transforms.Compose([
+                transforms.RandomResizedCrop(img_size),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
+        
+        test_set = datasets.ImageFolder(
+            test_dir,
+            transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(img_size),
+                transforms.ToTensor(),
+                normalize,
+            ]))
+
+    weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}_use_qdt_{use_qdt}.pth'
 
     model = get_model(model_type, num_classes, num_patches, embed_dim, to_size, use_qdt)
     model = model.to(device)
