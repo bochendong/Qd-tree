@@ -123,7 +123,7 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     img_size =  args.img_size
     num_patches = args.num_patches
-    use_qdt = False
+    use_qdt = True
 
     train_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/train/"
     test_dir = "/lustre/orion/bif146/world-shared/enzhi/imagenet2012/val/"
