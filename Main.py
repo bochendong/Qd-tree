@@ -10,13 +10,14 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torchvision.datasets as datasets
 
+
 from Code.Train.Train import learn
 from Code.Model.VIT import get_model
 from Code.Utils.Logging import setup_logging
 from Code.Utils.GpuCheck import check_available_gpus
 from Code.DataSet.Preprocess import preprocess_image
 from Code.DataSet.ImageNetDataSet import ImageNetDataset
-
+from Code.DataSet.qd_transform import SequenceImageTransform
 
 def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
          model_type = 'vit_base_patch16_224',
@@ -28,59 +29,42 @@ def train(rank, num_gpus, train_dir, test_dir, preporcess_dir, weight_path,
     torch.manual_seed(0)
     device = torch.device(f'cuda:{rank}')
 
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
     if use_qdt:
-        transform = transforms.Compose([
-            transforms.ToPILImage(),
+        train_transform = transforms.Compose([
+            transforms.RandomResizedCrop(img_size),
+            transforms.RandomHorizontalFlip(),
+            SequenceImageTransform(to_size=(8, 8, 3), fixed_length=196),
             transforms.ToTensor(),
             normalize,
         ])
 
-        if (preprocess_local == False): 
-            train_set = ImageNetDataset(root_dir=train_dir, transform=transform, 
-                                    img_size = img_size, to_size = to_size, 
-                                    num_patches = num_patches)
-            
-            test_set = ImageNetDataset(root_dir=test_dir, transform=transform, 
-                                    img_size = img_size, to_size = to_size, 
-                                    num_patches = num_patches)
-        else:
-            preprocess_image(train_dir, preporcess_dir + f"{num_patches}_{to_size}/train/", 
-                            img_size = img_size, 
-                            to_size = to_size, fixed_length = num_patches)
-
-            preprocess_image(test_dir,  preporcess_dir + f"{num_patches}_{to_size}/test/", 
-                            img_size = img_size, to_size = to_size, fixed_length = num_patches)
-            
-            train_set = ImageNetDataset(root_dir= preporcess_dir + f"{num_patches}_{to_size}/train/", 
-                                        transform=transform, preprocess_local = True, img_size = img_size, 
-                                    to_size = to_size, num_patches = num_patches)
-            
-            test_set = ImageNetDataset(root_dir= preporcess_dir + f"{num_patches}_{to_size}/test/", 
-                                    transform=transform, img_size = img_size, to_size = to_size, 
-                                    num_patches = num_patches)
-
+        test_transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.RandomHorizontalFlip(),
+            SequenceImageTransform(to_size=(8, 8, 3), fixed_length=196),
+            transforms.ToTensor(),
+            normalize,
+        ])
     else:
-        train_set = datasets.ImageFolder(
-            train_dir,
-            transforms.Compose([
+        train_transform = transforms.Compose([
                 transforms.RandomResizedCrop(img_size),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 normalize,
-            ]))
+        ])
         
-        test_set = datasets.ImageFolder(
-            test_dir,
-            transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(img_size),
-                transforms.ToTensor(),
-                normalize,
-            ]))
+        test_transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(img_size),
+            transforms.ToTensor(),
+            normalize,
+        ])
+
+    train_set = datasets.ImageFolder(train_dir, train_transform)
+    test_set = datasets.ImageFolder(test_dir,test_transform)
 
     weight_path = weight_path + f'img_size_{img_size}_num_patches_{num_patches}_use_qdt_{use_qdt}.pth'
 
